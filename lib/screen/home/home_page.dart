@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:bric_racker/common/ball.dart';
 import 'package:bric_racker/common/player.dart';
 import 'package:bric_racker/screen/cover_page/cover_page.dart';
@@ -28,7 +27,13 @@ class _HomePageState extends State<HomePage> {
   double playerX = 0;
   double playerWidth = 0.3; // out of 2
 
-  //Let's play the game
+  // Focus node for keyboard input
+  final FocusNode _focusNode = FocusNode();
+
+  // Key press state
+  Set<LogicalKeyboardKey> _keysPressed = {};
+
+  // Start the game
   void startGame() {
     hasGameStarted = true;
     Timer.periodic(const Duration(milliseconds: 10), (timer) {
@@ -41,10 +46,16 @@ class _HomePageState extends State<HomePage> {
   // Move player position to the Left
   void moveLeft() {
     setState(() {
-      // only moving the play to the left if moving left doesn't move player off the screen
-      // if (!(playerX - 0.2 <= -1)) {
       if (playerX > -0.991) {
         playerX -= 0.02;
+      }
+    });
+  }
+
+  void moveLeftWithArrowKey() {
+    setState(() {
+      if (playerX > -0.991) {
+        playerX -= 0.1;
       }
     });
   }
@@ -54,8 +65,18 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       // only moving the player to the right if moving right doesn't move player off the screen
 
-      if (playerX < 1.3 - playerWidth) {
+      if (playerX < 1 - playerWidth) {
         playerX += 0.02;
+      }
+    });
+  }
+
+  void moveRightWithArrowKey() {
+    setState(() {
+      // only moving the player to the right if moving right doesn't move player off the screen
+
+      if (playerX < 1 - playerWidth) {
+        playerX += 0.1;
       }
     });
   }
@@ -75,42 +96,70 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _focusNode.requestFocus();
+    Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      if (_keysPressed.contains(LogicalKeyboardKey.arrowLeft)) {
+        moveLeftWithArrowKey();
+      }
+      if (_keysPressed.contains(LogicalKeyboardKey.arrowRight)) {
+        moveRightWithArrowKey();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return KeyboardListener(
-      focusNode: FocusNode(),
-      autofocus: true,
-      onKeyEvent: (event) {
-        if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-          moveLeft();
-        } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-          moveRight();
-        }
-      },
-      child: GestureDetector(
-        onPanUpdate: _onPanUpdate,
-        onPanStart: (details) => _lastTouchPosition = details.localPosition,
-        onTap: startGame,
-        child: Scaffold(
-          backgroundColor: Colors.green[100],
-          body: Center(
+    return GestureDetector(
+      onPanUpdate: _onPanUpdate,
+      onPanStart: (details) => _lastTouchPosition = details.localPosition,
+      onTap: startGame,
+      child: Scaffold(
+        backgroundColor: Colors.green[100],
+        body: Center(
+          child: KeyboardListener(
+            focusNode: _focusNode,
+            autofocus: true,
+            onKeyEvent: (KeyEvent event) {
+              setState(() {
+                if (event is KeyDownEvent) {
+                  _keysPressed.add(event.logicalKey);
+                  if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                    moveLeftWithArrowKey();
+                  } else if (event.logicalKey ==
+                      LogicalKeyboardKey.arrowRight) {
+                    moveRightWithArrowKey();
+                  }
+                } else if (event is KeyUpEvent) {
+                  _keysPressed.remove(event.logicalKey);
+                }
+              });
+            },
             child: Stack(
               children: [
-                // tap to play button
+                // Tap to play button
                 CoverPage(hasGameStarted: hasGameStarted),
 
-                // make a ball
+                // Ball
                 Ball(
                   ballX: ballX,
                   ballY: ballY,
                 ),
 
-                // make a player
+                // Player
                 Player(
                   playerX: playerX,
                   playerWidth: playerWidth,
                 ),
 
-                // where is playerX exactly?
+                // Display playerX position
                 Container(
                   alignment: Alignment(playerX, 0.9),
                   child: Container(
@@ -118,7 +167,7 @@ class _HomePageState extends State<HomePage> {
                     width: 4,
                     height: 15,
                   ),
-                )
+                ),
               ],
             ),
           ),
