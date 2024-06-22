@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bric_racker/common/ball.dart';
+import 'package:bric_racker/common/brick.dart';
 import 'package:bric_racker/common/player.dart';
 import 'package:bric_racker/screen/cover_page/cover_page.dart';
 import 'package:bric_racker/screen/game_over/game_over_page.dart';
@@ -14,21 +15,39 @@ class HomePage extends StatefulWidget {
 }
 
 // Direction
-enum Direction { up, down }
+enum Direction { up, down, left, right }
 
 class _HomePageState extends State<HomePage> {
   // ball alignment variables
   double ballX = 0;
   double ballY = 0;
+  double ballXincrement = 0.01;
+  double ballYincrement = 0.01;
 
   // Directions
-  var ballDairection = Direction.down;
+  // var ballDairection = Direction.down;
+  var ballXDirection = Direction.left;
+  var ballYDirection = Direction.down;
 
   // setting for game
   bool hasGameStarted = false;
 
   double ballSpeedX = 5;
   double ballSpeedY = 5;
+
+  // Brick Varialbes
+  static double firstBrickX = -0.9;
+  static double firstBrickY = -0.9;
+  static double brickWidth = 0.2; // out of 2
+  static double brickHeight = 0.05; // out of 2
+  static double brickGap = 0.03;
+  bool brickBroken = false;
+
+  List myBricks = [
+    //[x, y, brocken = true / false]
+    [firstBrickX, firstBrickY, false],
+    [firstBrickX + brickWidth + brickGap, firstBrickY, false],
+  ];
 
   // player variables
   double playerX = -0.2;
@@ -44,24 +63,43 @@ class _HomePageState extends State<HomePage> {
 
   // Start the game
   void startGame() {
-    hasGameStarted = true;
-    Timer.periodic(const Duration(milliseconds: 10), (timer) {
-      // Update Directions
-      updateDirections();
-      // Move ball
-      moveBall();
-      // Check if player dead
-      if (isPlayerDead()) {
-        timer.cancel();
-        isGameOver = true;
+    if (hasGameStarted == false) {
+      hasGameStarted = true;
+      Timer.periodic(const Duration(milliseconds: 10), (timer) {
+        // Update Directions
+        updateDirections();
+        // Move ball
+        moveBall();
+        // Check if player dead
+        if (isPlayerDead()) {
+          timer.cancel();
+          isGameOver = true;
+        }
+
+        // Check if brick is hit
+        checkForBrockenBricks();
+      });
+    }
+  }
+
+  // check for brocken bricks
+  void checkForBrockenBricks() {
+    if (ballX >= myBricks[0][0] && ballX <= myBricks[0][0] + brickWidth) {
+      if (ballY >= myBricks[0][1] &&
+          ballY <= myBricks[0][1] + brickHeight &&
+          brickBroken == false) {
+        setState(() {
+          brickBroken = true;
+          ballYDirection = Direction.down;
+        });
       }
-    });
+    }
   }
 
   // is player dead
   bool isPlayerDead() {
     // player dies if ball reaches the bottom of the screen
-    if (ballY >= 1) {
+    if (ballY >= 0.8) {
       return true;
     }
     return false;
@@ -69,10 +107,22 @@ class _HomePageState extends State<HomePage> {
 
   moveBall() {
     setState(() {
-      if (ballDairection == Direction.down) {
-        ballY += 0.006;
-      } else if (ballDairection == Direction.up) {
-        ballY -= 0.006;
+      // Move Horizontally
+      if (ballXDirection == Direction.left) {
+        // ballX -= 0.006;
+        ballX -= ballXincrement;
+      } else if (ballXDirection == Direction.right) {
+        // ballX += 0.006;
+        ballX += ballXincrement;
+      }
+
+      //
+      if (ballYDirection == Direction.down) {
+        // ballY += 0.006;
+        ballY += ballYincrement;
+      } else if (ballYDirection == Direction.up) {
+        // ballY -= 0.006;
+        ballY -= ballYincrement;
       }
     });
   }
@@ -80,10 +130,21 @@ class _HomePageState extends State<HomePage> {
   // update direction of the ball
   updateDirections() {
     setState(() {
+      // ball goes up when it hits the player
       if (ballY >= 0.65 && ballX >= playerX && ballX <= playerX + playerWidth) {
-        ballDairection = Direction.up;
-      } else if (ballY <= -0.9) {
-        ballDairection = Direction.down;
+        ballYDirection = Direction.up;
+      }
+      // ball goes down when it hits the top of the screen
+      else if (ballY <= -0.9) {
+        ballYDirection = Direction.down;
+      }
+      // ball goes left when it hits the right of the screen
+      else if (ballX >= 1) {
+        ballXDirection = Direction.left;
+      }
+      // ball goes right when it hits the left of the screen
+      else if (ballX <= -1) {
+        ballXDirection = Direction.right;
       }
     });
   }
@@ -98,14 +159,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   void moveLeftWithArrowKey() {
-    // Move ball
+    // Move player
     setState(() {
       if (playerX > -0.991) {
         playerX -= 0.1;
       }
     });
-
-    // Update directions
   }
 
   // Move player position to the right
@@ -184,6 +243,8 @@ class _HomePageState extends State<HomePage> {
                   } else if (event.logicalKey ==
                       LogicalKeyboardKey.arrowRight) {
                     moveRightWithArrowKey();
+                  } else if (event.logicalKey == LogicalKeyboardKey.space) {
+                    startGame();
                   }
                 } else if (event is KeyUpEvent) {
                   _keysPressed.remove(event.logicalKey);
@@ -208,6 +269,23 @@ class _HomePageState extends State<HomePage> {
                 Player(
                   playerX: playerX,
                   playerWidth: playerWidth,
+                ),
+
+                // bricks
+                Brick(
+                  brickX: myBricks[0][0],
+                  brickY: myBricks[0][1],
+                  brickWidth: brickWidth,
+                  brickHeight: brickHeight,
+                  brickBroken: brickBroken,
+                ),
+
+                Brick(
+                  brickX: myBricks[1][0],
+                  brickY: myBricks[1][1],
+                  brickWidth: brickWidth,
+                  brickHeight: brickHeight,
+                  brickBroken: brickBroken,
                 ),
 
                 // Display playerX position
