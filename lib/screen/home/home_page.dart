@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:bric_racker/common/ball.dart';
 import 'package:bric_racker/common/player.dart';
 import 'package:bric_racker/screen/cover_page/cover_page.dart';
+import 'package:bric_racker/screen/game_over/game_over_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -57,7 +58,9 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // is player dead
   bool isPlayerDead() {
+    // player dies if ball reaches the bottom of the screen
     if (ballY >= 1) {
       return true;
     }
@@ -77,7 +80,7 @@ class _HomePageState extends State<HomePage> {
   // update direction of the ball
   updateDirections() {
     setState(() {
-      if (ballY >= 0.9 && ballX >= playerX && ballX <= playerX + playerWidth) {
+      if (ballY >= 0.65 && ballX >= playerX && ballX <= playerX + playerWidth) {
         ballDairection = Direction.up;
       } else if (ballY <= -0.9) {
         ballDairection = Direction.down;
@@ -191,6 +194,9 @@ class _HomePageState extends State<HomePage> {
               children: [
                 // Tap to play button
                 CoverPage(hasGameStarted: hasGameStarted),
+
+                // Game Over Screen
+                GameOverPage(isGameOver: isGameOver),
 
                 // Ball
                 Ball(

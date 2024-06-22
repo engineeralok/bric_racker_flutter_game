@@ -10,7 +10,7 @@ class Player extends StatelessWidget {
     return Container(
       // alignment: Alignment(playerX, 0.9),
       alignment:
-          Alignment((2 * playerX + playerWidth) / (2 - playerWidth), 0.9),
+          Alignment((2 * playerX + playerWidth) / (2 - playerWidth), 0.65),
       child: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(10.0)),
         child: Container(
