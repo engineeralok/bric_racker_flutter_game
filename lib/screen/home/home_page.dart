@@ -12,10 +12,16 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+// Direction
+enum Direction { up, down }
+
 class _HomePageState extends State<HomePage> {
   // ball alignment variables
   double ballX = 0;
   double ballY = 0;
+
+  // Directions
+  var ballDairection = Direction.down;
 
   // setting for game
   bool hasGameStarted = false;
@@ -24,22 +30,58 @@ class _HomePageState extends State<HomePage> {
   double ballSpeedY = 5;
 
   // player variables
-  double playerX = 0;
-  double playerWidth = 0.3; // out of 2
+  double playerX = -0.2;
+  double playerWidth = 0.4; // out of 2
 
   // Focus node for keyboard input
   final FocusNode _focusNode = FocusNode();
 
   // Key press state
-  Set<LogicalKeyboardKey> _keysPressed = {};
+  final Set<LogicalKeyboardKey> _keysPressed = {};
+
+  bool isGameOver = false;
 
   // Start the game
   void startGame() {
     hasGameStarted = true;
     Timer.periodic(const Duration(milliseconds: 10), (timer) {
-      setState(() {
+      // Update Directions
+      updateDirections();
+      // Move ball
+      moveBall();
+      // Check if player dead
+      if (isPlayerDead()) {
+        timer.cancel();
+        isGameOver = true;
+      }
+    });
+  }
+
+  bool isPlayerDead() {
+    if (ballY >= 1) {
+      return true;
+    }
+    return false;
+  }
+
+  moveBall() {
+    setState(() {
+      if (ballDairection == Direction.down) {
         ballY += 0.006;
-      });
+      } else if (ballDairection == Direction.up) {
+        ballY -= 0.006;
+      }
+    });
+  }
+
+  // update direction of the ball
+  updateDirections() {
+    setState(() {
+      if (ballY >= 0.9 && ballX >= playerX && ballX <= playerX + playerWidth) {
+        ballDairection = Direction.up;
+      } else if (ballY <= -0.9) {
+        ballDairection = Direction.down;
+      }
     });
   }
 
@@ -53,11 +95,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   void moveLeftWithArrowKey() {
+    // Move ball
     setState(() {
       if (playerX > -0.991) {
         playerX -= 0.1;
       }
     });
+
+    // Update directions
   }
 
   // Move player position to the right
@@ -160,14 +205,22 @@ class _HomePageState extends State<HomePage> {
                 ),
 
                 // Display playerX position
-                Container(
-                  alignment: Alignment(playerX, 0.9),
-                  child: Container(
-                    color: Colors.red,
-                    width: 4,
-                    height: 15,
-                  ),
-                ),
+                // Container(
+                //   alignment: Alignment(playerX, 0.9),
+                //   child: Container(
+                //     color: Colors.red,
+                //     width: 4,
+                //     height: 15,
+                //   ),
+                // ),
+                // Container(
+                //   alignment: Alignment(playerX + playerWidth, 0.9),
+                //   child: Container(
+                //     color: Colors.green,
+                //     width: 4,
+                //     height: 15,
+                //   ),
+                // ),
               ],
             ),
           ),
