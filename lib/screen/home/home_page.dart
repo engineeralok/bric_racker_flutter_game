@@ -268,6 +268,23 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // reset gmae back to initial values when user hits the restart button
+  void resetGame() {
+    setState(() {
+      playerX = -0.2;
+      ballX = 0;
+      ballY = 0;
+      isGameOver = false;
+      hasGameStarted = false;
+      myBricks = [
+        //[x, y, brocken = true / false]
+        [firstBrickX + 0 * (brickWidth + brickGap), firstBrickY, false],
+        [firstBrickX + 1 * (brickWidth + brickGap), firstBrickY, false],
+        [firstBrickX + 2 * (brickWidth + brickGap), firstBrickY, false]
+      ];
+    });
+  }
+
   Offset _lastTouchPosition = Offset.zero;
 
   void _onPanUpdate(DragUpdateDetails details) {
@@ -337,12 +354,16 @@ class _HomePageState extends State<HomePage> {
                 CoverPage(hasGameStarted: hasGameStarted),
 
                 // Game Over Screen
-                GameOverPage(isGameOver: isGameOver),
+                GameOverPage(
+                  isGameOver: isGameOver,
+                  function: resetGame,
+                ),
 
                 // Ball
                 Ball(
                   ballX: ballX,
                   ballY: ballY,
+                  hasGameStarted: hasGameStarted,
                 ),
 
                 // Player
