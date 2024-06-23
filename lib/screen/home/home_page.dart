@@ -36,17 +36,23 @@ class _HomePageState extends State<HomePage> {
   double ballSpeedY = 5;
 
   // Brick Varialbes
-  static double firstBrickX = -0.9;
-  static double firstBrickY = -0.9;
+  static double firstBrickX = -1 + wallGap;
+  static double firstBrickY = -0.7;
   static double brickWidth = 0.2; // out of 2
   static double brickHeight = 0.05; // out of 2
   static double brickGap = 0.03;
-  bool brickBroken = false;
+  static int numberOfBrickInRow = 3;
+  static double wallGap = 0.5 *
+      (2 -
+          numberOfBrickInRow * brickWidth -
+          (numberOfBrickInRow - 1) * brickGap);
+  // bool brickBroken = false;
 
   List myBricks = [
     //[x, y, brocken = true / false]
-    [firstBrickX, firstBrickY, false],
-    [firstBrickX + brickWidth + brickGap, firstBrickY, false],
+    [firstBrickX + 0 * (brickWidth + brickGap), firstBrickY, false],
+    [firstBrickX + 1 * (brickWidth + brickGap), firstBrickY, false],
+    [firstBrickX + 2 * (brickWidth + brickGap), firstBrickY, false]
   ];
 
   // player variables
@@ -84,16 +90,90 @@ class _HomePageState extends State<HomePage> {
 
   // check for brocken bricks
   void checkForBrockenBricks() {
-    if (ballX >= myBricks[0][0] && ballX <= myBricks[0][0] + brickWidth) {
-      if (ballY >= myBricks[0][1] &&
-          ballY <= myBricks[0][1] + brickHeight &&
-          brickBroken == false) {
-        setState(() {
-          brickBroken = true;
-          ballYDirection = Direction.down;
-        });
+    // check for when ball is inside the brick (aka hits the brick)
+    for (var i = 0; i < myBricks.length; i++) {
+      if (ballX >= myBricks[i][0] && ballX <= myBricks[i][0] + brickWidth) {
+        if (ballY >= myBricks[i][1] &&
+            ballY <= myBricks[i][1] + brickHeight &&
+            myBricks[i][2] == false) {
+          setState(() {
+            myBricks[i][2] = true;
+
+            // since brick is brocken update ball direction
+            // based on which side of brick it hits
+            // to do this calculate the distance of the ball
+            // from each of the 4 side.
+            // the smallest distance is the side of the ball hit
+
+            double leftSideDist = (myBricks[i][0] - ballX).abs();
+            double rightSideDist = (myBricks[i][0] + brickWidth - ballX).abs();
+            double topSideDist = (myBricks[i][1] - ballY).abs();
+            double bottomSideDist =
+                (myBricks[i][1] + brickHeight - ballY).abs();
+
+            String min = findMin(
+                leftSideDist, rightSideDist, topSideDist, bottomSideDist);
+
+            switch (min) {
+              case "left":
+                ballXDirection = Direction.left;
+                break;
+              case "right":
+                ballXDirection = Direction.right;
+                break;
+              case "top":
+                ballYDirection = Direction.up;
+                break;
+              case "bottom":
+                ballYDirection = Direction.down;
+                break;
+            }
+
+            // // if ball hit bottom side of brick then
+            // ballYDirection = Direction.down;
+
+            // // if ball hit top side of brick then
+            // ballYDirection = Direction.up;
+
+            // // if ball hit right side of brick then
+            // ballXDirection = Direction.right;
+
+            // // if ball hit left side of brick then
+            // ballXDirection = Direction.left;
+          });
+        }
       }
     }
+  }
+
+  // return the smallest side
+  String findMin(double a, double b, double c, double d) {
+    List<double> myList = [
+      a,
+      b,
+      c,
+      d,
+    ];
+
+    double currentMin = 0;
+
+    for (int i = 0; i < myList.length; i++) {
+      if (myList[i] < currentMin) {
+        currentMin = myList[i];
+      }
+    }
+
+    if ((currentMin - a).abs() < 0.01) {
+      return 'left';
+    } else if ((currentMin - b).abs() < 0.01) {
+      return 'right';
+    } else if ((currentMin - c).abs() < 0.01) {
+      return 'top';
+    } else if ((currentMin - d).abs() < 0.01) {
+      return 'bottom';
+    }
+
+    return '';
   }
 
   // is player dead
@@ -275,17 +355,24 @@ class _HomePageState extends State<HomePage> {
                 Brick(
                   brickX: myBricks[0][0],
                   brickY: myBricks[0][1],
+                  brickBroken: myBricks[0][2],
                   brickWidth: brickWidth,
                   brickHeight: brickHeight,
-                  brickBroken: brickBroken,
                 ),
 
                 Brick(
                   brickX: myBricks[1][0],
                   brickY: myBricks[1][1],
+                  brickBroken: myBricks[1][2],
                   brickWidth: brickWidth,
                   brickHeight: brickHeight,
-                  brickBroken: brickBroken,
+                ),
+                Brick(
+                  brickX: myBricks[2][0],
+                  brickY: myBricks[2][1],
+                  brickBroken: myBricks[2][2],
+                  brickWidth: brickWidth,
+                  brickHeight: brickHeight,
                 ),
 
                 // Display playerX position
