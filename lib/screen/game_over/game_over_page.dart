@@ -25,7 +25,7 @@ class GameOverPage extends StatelessWidget {
               Container(
                 alignment: const Alignment(0, -0.3),
                 child: Text(
-                  "G A M E  O V E R",
+                  "GAME OVER",
                   style: gameFont,
                 ),
               ),

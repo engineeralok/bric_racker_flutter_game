@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
 
   // Brick Varialbes
   static double firstBrickX = -1 + wallGap;
-  static double firstBrickY = -0.7;
+  static double firstBrickY = -0.9;
   static double brickWidth = 0.2; // out of 2
   static double brickHeight = 0.05; // out of 2
   static double brickGap = 0.03;
@@ -215,7 +215,7 @@ class _HomePageState extends State<HomePage> {
         ballYDirection = Direction.up;
       }
       // ball goes down when it hits the top of the screen
-      else if (ballY <= -0.9) {
+      else if (ballY <= -1) {
         ballYDirection = Direction.down;
       }
       // ball goes left when it hits the right of the screen
@@ -327,93 +327,98 @@ class _HomePageState extends State<HomePage> {
       onTap: startGame,
       child: Scaffold(
         backgroundColor: Colors.green[100],
-        body: Center(
-          child: KeyboardListener(
-            focusNode: _focusNode,
-            autofocus: true,
-            onKeyEvent: (KeyEvent event) {
-              setState(() {
-                if (event is KeyDownEvent) {
-                  _keysPressed.add(event.logicalKey);
-                  if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                    moveLeftWithArrowKey();
-                  } else if (event.logicalKey ==
-                      LogicalKeyboardKey.arrowRight) {
-                    moveRightWithArrowKey();
-                  } else if (event.logicalKey == LogicalKeyboardKey.space) {
-                    startGame();
+        body: SafeArea(
+          child: Center(
+            child: KeyboardListener(
+              focusNode: _focusNode,
+              autofocus: true,
+              onKeyEvent: (KeyEvent event) {
+                setState(() {
+                  if (event is KeyDownEvent) {
+                    _keysPressed.add(event.logicalKey);
+                    if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                      moveLeftWithArrowKey();
+                    } else if (event.logicalKey ==
+                        LogicalKeyboardKey.arrowRight) {
+                      moveRightWithArrowKey();
+                    } else if (event.logicalKey == LogicalKeyboardKey.space) {
+                      startGame();
+                    }
+                  } else if (event is KeyUpEvent) {
+                    _keysPressed.remove(event.logicalKey);
                   }
-                } else if (event is KeyUpEvent) {
-                  _keysPressed.remove(event.logicalKey);
-                }
-              });
-            },
-            child: Stack(
-              children: [
-                // Tap to play button
-                CoverPage(hasGameStarted: hasGameStarted),
+                });
+              },
+              child: Stack(
+                children: [
+                  // Tap to play button
+                  CoverPage(
+                    hasGameStarted: hasGameStarted,
+                    isGameOver: isGameOver,
+                  ),
 
-                // Game Over Screen
-                GameOverPage(
-                  isGameOver: isGameOver,
-                  function: resetGame,
-                ),
+                  // Game Over Screen
+                  GameOverPage(
+                    isGameOver: isGameOver,
+                    function: resetGame,
+                  ),
 
-                // Ball
-                Ball(
-                  ballX: ballX,
-                  ballY: ballY,
-                  hasGameStarted: hasGameStarted,
-                ),
+                  // Ball
+                  Ball(
+                    ballX: ballX,
+                    ballY: ballY,
+                    hasGameStarted: hasGameStarted,
+                  ),
 
-                // Player
-                Player(
-                  playerX: playerX,
-                  playerWidth: playerWidth,
-                ),
+                  // Player
+                  Player(
+                    playerX: playerX,
+                    playerWidth: playerWidth,
+                  ),
 
-                // bricks
-                Brick(
-                  brickX: myBricks[0][0],
-                  brickY: myBricks[0][1],
-                  brickBroken: myBricks[0][2],
-                  brickWidth: brickWidth,
-                  brickHeight: brickHeight,
-                ),
+                  // bricks
+                  Brick(
+                    brickX: myBricks[0][0],
+                    brickY: myBricks[0][1],
+                    brickBroken: myBricks[0][2],
+                    brickWidth: brickWidth,
+                    brickHeight: brickHeight,
+                  ),
 
-                Brick(
-                  brickX: myBricks[1][0],
-                  brickY: myBricks[1][1],
-                  brickBroken: myBricks[1][2],
-                  brickWidth: brickWidth,
-                  brickHeight: brickHeight,
-                ),
-                Brick(
-                  brickX: myBricks[2][0],
-                  brickY: myBricks[2][1],
-                  brickBroken: myBricks[2][2],
-                  brickWidth: brickWidth,
-                  brickHeight: brickHeight,
-                ),
+                  Brick(
+                    brickX: myBricks[1][0],
+                    brickY: myBricks[1][1],
+                    brickBroken: myBricks[1][2],
+                    brickWidth: brickWidth,
+                    brickHeight: brickHeight,
+                  ),
+                  Brick(
+                    brickX: myBricks[2][0],
+                    brickY: myBricks[2][1],
+                    brickBroken: myBricks[2][2],
+                    brickWidth: brickWidth,
+                    brickHeight: brickHeight,
+                  ),
 
-                // Display playerX position
-                // Container(
-                //   alignment: Alignment(playerX, 0.9),
-                //   child: Container(
-                //     color: Colors.red,
-                //     width: 4,
-                //     height: 15,
-                //   ),
-                // ),
-                // Container(
-                //   alignment: Alignment(playerX + playerWidth, 0.9),
-                //   child: Container(
-                //     color: Colors.green,
-                //     width: 4,
-                //     height: 15,
-                //   ),
-                // ),
-              ],
+                  // Display playerX position
+                  // Container(
+                  //   alignment: Alignment(playerX, 0.9),
+                  //   child: Container(
+                  //     color: Colors.red,
+                  //     width: 4,
+                  //     height: 15,
+                  //   ),
+                  // ),
+                  // Container(
+                  //   alignment: Alignment(playerX + playerWidth, 0.9),
+                  //   child: Container(
+                  //     color: Colors.green,
+                  //     width: 4,
+                  //     height: 15,
+                  //   ),
+                  // ),
+                ],
+              ),
             ),
           ),
         ),
