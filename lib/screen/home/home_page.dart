@@ -208,10 +208,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   // update direction of the ball
-  updateDirections() {
+  void updateDirections() {
     setState(() {
-      // ball goes up when it hits the player
-      if (ballY >= 0.65 && ballX >= playerX && ballX <= playerX + playerWidth) {
+      // ball goes up when it hits the player from above
+      if (ballY >= 0.65 &&
+          ballY <= 0.7 &&
+          ballX >= playerX &&
+          ballX <= playerX + playerWidth &&
+          ballYDirection == Direction.down) {
         ballYDirection = Direction.up;
       }
       // ball goes down when it hits the top of the screen
