@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:bric_racker/common/ball.dart';
 import 'package:bric_racker/common/brick.dart';
 import 'package:bric_racker/common/player.dart';
+import 'package:bric_racker/models/brick_model.dart';
 import 'package:bric_racker/screen/cover_page/cover_page.dart';
 import 'package:bric_racker/screen/game_over/game_over_page.dart';
 import 'package:flutter/material.dart';
@@ -48,11 +49,11 @@ class _HomePageState extends State<HomePage> {
           (numberOfBrickInRow - 1) * brickGap);
   // bool brickBroken = false;
 
-  List myBricks = [
+  List<BrickModel> myBricks = [
     //[x, y, brocken = true / false]
-    [firstBrickX + 0 * (brickWidth + brickGap), firstBrickY, false],
-    [firstBrickX + 1 * (brickWidth + brickGap), firstBrickY, false],
-    [firstBrickX + 2 * (brickWidth + brickGap), firstBrickY, false]
+    BrickModel(firstBrickX + 0 * (brickWidth + brickGap), firstBrickY, false),
+    BrickModel(firstBrickX + 1 * (brickWidth + brickGap), firstBrickY, false),
+    BrickModel(firstBrickX + 2 * (brickWidth + brickGap), firstBrickY, false)
   ];
 
   // player variables
@@ -80,6 +81,7 @@ class _HomePageState extends State<HomePage> {
         if (isPlayerDead()) {
           timer.cancel();
           isGameOver = true;
+          HapticFeedback.vibrate();
         }
 
         // Check if brick is hit
@@ -92,12 +94,14 @@ class _HomePageState extends State<HomePage> {
   void checkForBrockenBricks() {
     // check for when ball is inside the brick (aka hits the brick)
     for (var i = 0; i < myBricks.length; i++) {
-      if (ballX >= myBricks[i][0] && ballX <= myBricks[i][0] + brickWidth) {
-        if (ballY >= myBricks[i][1] &&
-            ballY <= myBricks[i][1] + brickHeight &&
-            myBricks[i][2] == false) {
+      if (ballX >= myBricks[i].x && ballX <= myBricks[i].x + brickWidth) {
+        if (ballY >= myBricks[i].y &&
+            ballY <= myBricks[i].y + brickHeight &&
+            myBricks[i].isBroken == false) {
           setState(() {
-            myBricks[i][2] = true;
+            myBricks[i].isBroken = true;
+            HapticFeedback.heavyImpact();
+            HapticFeedback.vibrate();
 
             // since brick is brocken update ball direction
             // based on which side of brick it hits
@@ -105,11 +109,10 @@ class _HomePageState extends State<HomePage> {
             // from each of the 4 side.
             // the smallest distance is the side of the ball hit
 
-            double leftSideDist = (myBricks[i][0] - ballX).abs();
-            double rightSideDist = (myBricks[i][0] + brickWidth - ballX).abs();
-            double topSideDist = (myBricks[i][1] - ballY).abs();
-            double bottomSideDist =
-                (myBricks[i][1] + brickHeight - ballY).abs();
+            double leftSideDist = (myBricks[i].x - ballX).abs();
+            double rightSideDist = (myBricks[i].x + brickWidth - ballX).abs();
+            double topSideDist = (myBricks[i].y - ballY).abs();
+            double bottomSideDist = (myBricks[i].y + brickHeight - ballY).abs();
 
             String min = findMin(
                 leftSideDist, rightSideDist, topSideDist, bottomSideDist);
@@ -210,6 +213,7 @@ class _HomePageState extends State<HomePage> {
   // update direction of the ball
   void updateDirections() {
     setState(() {
+      HapticFeedback.mediumImpact();
       // ball goes up when it hits the player from above
       if (ballY >= 0.65 &&
           ballY <= 0.7 &&
@@ -237,7 +241,7 @@ class _HomePageState extends State<HomePage> {
   void moveLeft() {
     setState(() {
       if (playerX > -0.991) {
-        playerX -= 0.02;
+        playerX -= 0.018;
       }
     });
   }
@@ -257,7 +261,7 @@ class _HomePageState extends State<HomePage> {
       // only moving the player to the right if moving right doesn't move player off the screen
 
       if (playerX < 1 - playerWidth) {
-        playerX += 0.02;
+        playerX += 0.018;
       }
     });
   }
@@ -282,9 +286,12 @@ class _HomePageState extends State<HomePage> {
       hasGameStarted = false;
       myBricks = [
         //[x, y, brocken = true / false]
-        [firstBrickX + 0 * (brickWidth + brickGap), firstBrickY, false],
-        [firstBrickX + 1 * (brickWidth + brickGap), firstBrickY, false],
-        [firstBrickX + 2 * (brickWidth + brickGap), firstBrickY, false]
+        BrickModel(
+            firstBrickX + 0 * (brickWidth + brickGap), firstBrickY, false),
+        BrickModel(
+            firstBrickX + 1 * (brickWidth + brickGap), firstBrickY, false),
+        BrickModel(
+            firstBrickX + 2 * (brickWidth + brickGap), firstBrickY, false)
       ];
     });
   }
@@ -382,24 +389,24 @@ class _HomePageState extends State<HomePage> {
 
                   // bricks
                   Brick(
-                    brickX: myBricks[0][0],
-                    brickY: myBricks[0][1],
-                    brickBroken: myBricks[0][2],
+                    brickX: myBricks[0].x,
+                    brickY: myBricks[0].y,
+                    brickBroken: myBricks[0].isBroken,
                     brickWidth: brickWidth,
                     brickHeight: brickHeight,
                   ),
 
                   Brick(
-                    brickX: myBricks[1][0],
-                    brickY: myBricks[1][1],
-                    brickBroken: myBricks[1][2],
+                    brickX: myBricks[1].x,
+                    brickY: myBricks[1].y,
+                    brickBroken: myBricks[1].isBroken,
                     brickWidth: brickWidth,
                     brickHeight: brickHeight,
                   ),
                   Brick(
-                    brickX: myBricks[2][0],
-                    brickY: myBricks[2][1],
-                    brickBroken: myBricks[2][2],
+                    brickX: myBricks[2].x,
+                    brickY: myBricks[2].y,
+                    brickBroken: myBricks[2].isBroken,
                     brickWidth: brickWidth,
                     brickHeight: brickHeight,
                   ),
